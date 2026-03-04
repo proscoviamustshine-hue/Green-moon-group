@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0c1a0e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Green Moon">
+<title>Green Moon</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0c1a0e;--deep:#122018;--pine:#1e3a28;--grove:#2d5a3d;--leaf:#4a8c5c;--sprout:#72b888;--dew:#b8dfc6;--paper:#f0ece2;--gold:#d4a843;--amber:#e8934a;--rose:#c96060;--safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);--nav-h:60px;--hdr-h:56px;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+html,body{height:100%;overflow:hidden;background:var(--ink);font-family:'IBM Plex Mono',monospace;color:var(--paper);}
+#splash{position:fixed;inset:0;z-index:999;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding-top:var(--safe-top);}
+.splash-moon{font-size:64px;animation:float 2s ease-in-out infinite;}
+.splash-spin{width:24px;height:24px;border:2px solid rgba(114,184,136,.2);border-top-color:var(--sprout);border-radius:50%;animation:spin .7s linear infinite;}
+.splash-txt{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--leaf);}
+#auth{position:fixed;inset:0;z-index:50;display:none;overflow-y:auto;background:var(--ink);padding:calc(var(--safe-top)+24px) 20px calc(var(--safe-bot)+24px);}
+#auth::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 140% 80% at -10% 0%,rgba(45,90,61,.5),transparent 55%),radial-gradient(ellipse 100% 100% at 110% 100%,rgba(30,58,40,.7),transparent 55%);pointer-events:none;}
+.auth-inner{position:relative;max-width:400px;margin:0 auto;}
+.auth-brand{text-align:center;padding:32px 0 28px;}
+.auth-moon-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--grove),var(--leaf));display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px;box-shadow:0 0 40px rgba(114,184,136,.4);animation:glow 3s ease-in-out infinite;}
+.auth-brand h1{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--dew);}
+.auth-brand p{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--leaf);margin-top:4px;}
+.sync-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(114,184,136,.08);border:1px solid rgba(114,184,136,.25);border-radius:20px;padding:5px 12px;font-size:9px;color:var(--sprout);margin-top:10px;letter-spacing:.07em;}
+.sync-pill.off{color:var(--amber);border-color:rgba(232,147,74,.3);background:rgba(232,147,74,.08);}
+.auth-card{background:rgba(18,32,24,.96);border:1px solid rgba(114,184,136,.18);border-radius:20px;padding:28px 24px;backdrop-filter:blur(20px);}
+.tabs{display:flex;gap:2px;background:rgba(0,0,0,.4);border-radius:10px;padding:3px;margin-bottom:22px;}
+.tab{flex:1;padding:9px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;border:none;background:transparent;color:var(--leaf);cursor:pointer;border-radius:8px;transition:all .2s;}
+.tab.active{background:var(--grove);color:var(--dew);}
+.fg{margin-bottom:15px;}
+.fg label{display:block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--sprout);margin-bottom:6px;}
+.fg input,.fg select,.fg textarea{width:100%;background:rgba(12,26,14,.8);border:1px solid rgba(114,184,136,.2);border-radius:10px;color:var(--paper);font-family:'IBM Plex Mono',monospace;font-size:15px;padding:13px 15px;outline:none;transition:border .2s;-webkit-appearance:none;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--sprout);box-shadow:0 0 0 3px rgba(114,184,136,.12);}
+.fg select option{background:var(--pine);}
+.fg textarea{resize:none;font-size:13px;}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.msg{border-radius:10px;padding:11px 14px;font-size:12px;margin-bottom:14px;display:none;line-height:1.5;}
+.msg-e{background:rgba(201,96,96,.15);border:1px solid rgba(201,96,96,.3);color:var(--rose);}
+.msg-s{background:rgba(114,184,136,.15);border:1px solid rgba(114,184,136,.3);color:var(--sprout);}
+.hint{text-align:center;margin-top:14px;font-size:10px;color:rgba(184,223,198,.4);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:14px 20px;border-radius:12px;border:none;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .15s;font-weight:500;min-height:48px;}
+.btn:active{transform:scale(.97);}
+.btn-full{width:100%;}
+.btn-p{background:linear-gradient(135deg,var(--grove),var(--leaf));color:var(--ink);}
+.btn-p:disabled{opacity:.55;pointer-events:none;}
+.btn-o{background:transparent;color:var(--dew);border:1px solid rgba(114,184,136,.3);}
+.btn-d{background:rgba(201,96,96,.15);color:var(--rose);border:1px solid rgba(201,96,96,.3);}
+.btn-gold{background:rgba(212,168,67,.15);color:var(--gold);border:1px solid rgba(212,168,67,.3);}
+.btn-sm{padding:8px 14px;font-size:10px;min-height:36px;border-radius:8px;}
+#main{position:fixed;inset:0;display:none;flex-direction:column;}
+#main.show{display:flex;}
+#hdr{height:calc(var(--hdr-h)+var(--safe-top));padding-top:var(--safe-top);background:rgba(12,26,14,.97);border-bottom:1px solid rgba(114,184,136,.1);display:flex;align-items:flex-end;flex-shrink:0;position:relative;z-index:40;backdrop-filter:blur(16px);}
+.hdr-inner{display:flex;align-items:center;width:100%;padding:0 16px 10px;}
+.hdr-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--dew);flex:1;}
+.hdr-sync{display:flex;align-items:center;gap:5px;font-size:8px;letter-spacing:.08em;color:var(--leaf);background:rgba(114,184,136,.07);border:1px solid rgba(114,184,136,.15);border-radius:14px;padding:4px 9px;}
+.sync-dot{width:5px;height:5px;border-radius:50%;background:var(--sprout);flex-shrink:0;}
+.sync-dot.off{background:var(--rose);}
+.sync-dot.spin{background:var(--gold);animation:spin .8s linear infinite;}
+.hdr-act{display:flex;gap:8px;align-items:center;margin-left:10px;}
+#sbar{position:fixed;top:0;left:0;right:0;height:3px;z-index:999;}
+#sbar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--grove),var(--sprout));transition:width .4s;}
+#pages{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;background:var(--ink);}
+.page{display:none;padding:12px 16px calc(16px + var(--nav-h) + var(--safe-bot));min-height:100%;animation:fadeUp .25s ease;}
+.page.active{display:block;}
+#bnav{height:calc(var(--nav-h)+var(--safe-bot));padding-bottom:var(--safe-bot);background:rgba(12,26,14,.98);border-top:1px solid rgba(114,184,136,.1);display:none;align-items:flex-start;flex-shrink:0;backdrop-filter:blur(16px);}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;height:var(--nav-h);gap:3px;cursor:pointer;position:relative;padding:0 4px;}
+.ni-ico{font-size:21px;transition:transform .2s;}
+.ni-lbl{font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:rgba(184,223,198,.4);transition:color .2s;}
+.ni.active .ni-ico{transform:scale(1.15);}
+.ni.active .ni-lbl{color:var(--sprout);}
+.ni-badge{position:absolute;top:8px;right:calc(50% - 16px);background:var(--rose);color:#fff;border-radius:8px;font-size:8px;padding:1px 5px;min-width:14px;text-align:center;display:none;}
+.ni-badge.show{display:block;}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--paper);margin:16px 0 10px;}
+.card{background:rgba(18,32,24,.9);border:1px solid rgba(114,184,136,.14);border-radius:16px;overflow:hidden;margin-bottom:12px;}
+.card-header{padding:14px 16px;border-bottom:1px solid rgba(114,184,136,.08);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--paper);}
+.card-body{padding:14px 16px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stat{background:rgba(18,32,24,.9);border:1px solid rgba(114,184,136,.14);border-radius:14px;padding:16px 14px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,rgba(114,184,136,.12),transparent);}
+.stat.g::after{background:radial-gradient(circle,rgba(212,168,67,.1),transparent);}
+.stat.a::after{background:radial-gradient(circle,rgba(232,147,74,.1),transparent);}
+.stat-label{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--leaf);margin-bottom:8px;}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--dew);line-height:1;}
+.stat-value.sm{font-size:18px;}
+.stat-sub{font-size:9px;color:rgba(184,223,198,.45);margin-top:5px;}
+.stat-icon{position:absolute;top:12px;right:12px;font-size:20px;opacity:.2;}
+.list-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid rgba(114,184,136,.07);transition:background .15s;}
+.list-item:last-child{border-bottom:none;}
+.list-item:active{background:rgba(114,184,136,.05);}
+.li-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--pine),var(--leaf));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--dew);flex-shrink:0;}
+.li-main{flex:1;min-width:0;}
+.li-name{font-size:13px;color:var(--dew);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.li-sub{font-size:10px;color:var(--leaf);margin-top:2px;}
+.li-right{text-align:right;flex-shrink:0;}
+.li-val{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--dew);}
+.li-val.g{color:var(--sprout);}.li-val.r{color:var(--rose);}.li-val.go{color:var(--gold);}
+.li-tag{font-size:9px;color:var(--leaf);margin-top:2px;}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:8px;letter-spacing:.09em;text-transform:uppercase;font-weight:500;}
+.bg{background:rgba(114,184,136,.15);color:var(--sprout);border:1px solid rgba(114,184,136,.25);}
+.bo{background:rgba(212,168,67,.15);color:var(--gold);border:1px solid rgba(212,168,67,.25);}
+.br{background:rgba(201,96,96,.15);color:var(--rose);border:1px solid rgba(201,96,96,.25);}
+.bm{background:rgba(184,223,198,.06);color:rgba(184,223,198,.5);border:1px solid rgba(184,223,198,.1);}
+.months-g{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:4px 0 8px;}
+.mon{text-align:center;padding:10px 2px;border-radius:10px;}
+.mon .mn{font-size:8px;color:rgba(184,223,198,.45);margin-bottom:4px;text-transform:uppercase;}
+.mon .ms{font-size:16px;}.mon .ma{font-size:8px;margin-top:2px;}
+.pm{background:rgba(114,184,136,.1);border:1px solid rgba(114,184,136,.2);}
+.lm{background:rgba(201,96,96,.07);border:1px solid rgba(201,96,96,.14);}
+.fm{background:rgba(184,223,198,.02);border:1px solid rgba(184,223,198,.06);}
+.tracker-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.tracker-tbl{border-collapse:collapse;font-size:11px;white-space:nowrap;}
+.tracker-tbl th{padding:9px 10px;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(114,184,136,.55);background:rgba(12,26,14,.6);font-weight:400;}
+.tracker-tbl td{padding:9px 10px;border-bottom:1px solid rgba(114,184,136,.06);}
+.tracker-tbl tr:last-child td{border-bottom:none;}
+.lr-card{border-radius:14px;padding:16px;margin-bottom:10px;border-left:3px solid var(--gold);background:rgba(18,32,24,.8);}
+.lr-card.approved{border-left-color:var(--sprout);}
+.lr-card.rejected{border-left-color:var(--rose);}
+.lr-amount{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--dew);}
+.prog{background:rgba(12,26,14,.8);border-radius:4px;height:4px;overflow:hidden;margin-top:8px;}
+.prog-f{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--grove),var(--sprout));transition:width .7s ease;}
+.empty{text-align:center;padding:48px 20px;color:rgba(184,223,198,.35);}
+.empty .ei{font-size:44px;margin-bottom:12px;opacity:.5;}.empty p{font-size:12px;line-height:1.7;}
+.menu-item{display:flex;align-items:center;gap:14px;padding:16px;border-bottom:1px solid rgba(114,184,136,.07);cursor:pointer;}
+.menu-item:active{background:rgba(114,184,136,.06);}
+.menu-item:last-child{border-bottom:none;}
+.mi-ico{font-size:22px;width:28px;text-align:center;}.mi-lbl{font-size:13px;color:var(--dew);}
+.mi-sub{font-size:10px;color:var(--leaf);margin-top:1px;}.mi-arr{color:rgba(184,223,198,.3);margin-left:auto;}
+.sheet-bg{position:fixed;inset:0;z-index:100;background:rgba(12,26,14,.85);opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(6px);}
+.sheet-bg.open{opacity:1;pointer-events:all;}
+.sheet{position:fixed;bottom:0;left:0;right:0;z-index:101;background:var(--pine);border-radius:20px 20px 0 0;border-top:1px solid rgba(114,184,136,.2);padding:0 0 calc(20px + var(--safe-bot));transform:translateY(102%);transition:transform .3s cubic-bezier(.32,.72,0,1);max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.sheet.open{transform:translateY(0);}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(114,184,136,.3);margin:12px auto 0;}
+.sheet-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--paper);padding:16px 20px 6px;}
+.sheet-sub{font-size:11px;color:var(--leaf);padding:0 20px 16px;border-bottom:1px solid rgba(114,184,136,.1);}
+.sheet-body{padding:16px 20px;}
+.sheet-acts{display:flex;gap:10px;padding:12px 20px 0;flex-wrap:wrap;}
+.ptabs{display:flex;gap:6px;padding:14px 16px 0;}
+.ptab{flex:1;padding:10px 8px;border-radius:10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:1px solid rgba(114,184,136,.15);color:var(--leaf);background:transparent;font-family:'IBM Plex Mono',monospace;text-align:center;}
+.ptab.active{background:rgba(114,184,136,.15);color:var(--dew);border-color:rgba(114,184,136,.3);}
+.search-bar{background:rgba(12,26,14,.7);border:1px solid rgba(114,184,136,.2);border-radius:12px;color:var(--paper);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:11px 14px;width:100%;outline:none;margin-bottom:12px;}
+.search-bar:focus{border-color:var(--sprout);}
+.frow{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;}
+.frow select{background:rgba(12,26,14,.7);border:1px solid rgba(114,184,136,.2);border-radius:9px;color:var(--paper);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:8px 10px;outline:none;-webkit-appearance:none;flex-shrink:0;}
+.info-box{background:rgba(45,90,61,.15);border:1px solid rgba(114,184,136,.15);border-radius:12px;padding:14px;font-size:11px;color:var(--dew);line-height:1.8;margin-bottom:14px;}
+#toast{position:fixed;top:calc(var(--safe-top)+60px);left:16px;right:16px;z-index:500;background:rgba(18,40,24,.98);border:1px solid rgba(114,184,136,.3);border-radius:14px;padding:13px 16px;font-size:12px;color:var(--dew);display:flex;align-items:center;gap:10px;transform:translateY(-110%);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);}
+#toast.show{transform:translateY(0);opacity:1;}
+#install-banner{position:fixed;bottom:calc(var(--nav-h)+var(--safe-bot)+10px);left:16px;right:16px;z-index:80;background:linear-gradient(135deg,rgba(30,58,40,.97),rgba(45,90,61,.97));border:1px solid rgba(114,184,136,.3);border-radius:14px;padding:14px 16px;display:none;align-items:center;gap:12px;}
+#install-banner.show{display:flex;}
+.ib-text{flex:1;font-size:11px;color:var(--dew);line-height:1.5;}
+.ib-text strong{color:var(--sprout);display:block;margin-bottom:2px;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes glow{0%,100%{box-shadow:0 0 30px rgba(114,184,136,.3);}50%{box-shadow:0 0 50px rgba(114,184,136,.55);}}
+@keyframes pop{0%,100%{transform:scale(1);}50%{transform:scale(1.6);}}
+</style>
+</head>
+<body>
+<div id="sbar"><div id="sbar-fill"></div></div>
+<div id="splash"><div class="splash-moon">🌙</div><div class="splash-spin"></div><div class="splash-txt" id="splash-txt">Loading...</div></div>
+<div id="auth">
+  <div class="auth-inner">
+    <div class="auth-brand">
+      <div class="auth-moon-icon">🌙</div>
+      <h1>Green Moon</h1><p>Savings Group</p>
+      <div class="sync-pill" id="auth-pill">🌐 Secured Cloud Database</div>
+    </div>
+    <div class="auth-card">
+      <div class="tabs"><button class="tab active" onclick="swTab('login',this)">Sign In</button><button class="tab" onclick="swTab('register',this)">Register</button></div>
+      <div id="aerr" class="msg msg-e"></div><div id="aok" class="msg msg-s"></div>
+      <div id="tab-login">
+        <div class="fg"><label>Username or Member ID</label><input id="lu" placeholder="admin or MBR001" autocapitalize="none" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="fg"><label>Password</label><input id="lp" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="btn btn-p btn-full" id="lbtn" onclick="doLogin()">Sign In →</button>
+        <div class="hint">Default admin: <strong>admin</strong> / <strong>admin123</strong></div>
+      </div>
+      <div id="tab-register" style="display:none">
+        <div class="fr2"><div class="fg"><label>First Name</label><input id="rf" autocapitalize="words"></div><div class="fg"><label>Last Name</label><input id="rl" autocapitalize="words"></div></div>
+        <div class="fg"><label>Phone</label><input id="rph" type="tel"></div>
+        <div class="fg"><label>National ID</label><input id="rni" autocapitalize="characters"></div>
+        <div class="fg"><label>Username</label><input id="ru" autocapitalize="none" autocomplete="username"></div>
+        <div class="fg"><label>Password (min 6)</label><input id="rpw" type="password" autocomplete="new-password"></div>
+        <button class="btn btn-p btn-full" id="rbtn" onclick="doRegister()">Create Account →</button>
+        <div class="hint">Admin will activate your account.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="main">
+  <div id="hdr"><div class="hdr-inner"><div style="flex:1"><div class="hdr-title" id="hdr-title">Dashboard</div></div><div class="hdr-sync" id="sync-badge"><span class="sync-dot" id="sdot"></span><span id="stxt">LIVE</span></div><div class="hdr-act" id="hdr-act"></div></div></div>
+  <div id="pages">
+    <!-- ADMIN: DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-icon">👥</div><div class="stat-label">Active Members</div><div class="stat-value" id="d-mem">0</div><div class="stat-sub" id="d-mems">—</div></div>
+        <div class="stat g"><div class="stat-icon">💰</div><div class="stat-label">Total Savings</div><div class="stat-value sm" id="d-sav">0</div><div class="stat-sub" id="d-savs">—</div></div>
+        <div class="stat a"><div class="stat-icon">📄</div><div class="stat-label">Loans Out</div><div class="stat-value sm" id="d-lo">0</div><div class="stat-sub" id="d-los">—</div></div>
+        <div class="stat"><div class="stat-icon">📊</div><div class="stat-label">Group Fund</div><div class="stat-value sm" id="d-fund">0</div><div class="stat-sub">Available</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div class="section-title" style="margin:0">Contribution Tracker</div><select id="d-yr" onchange="renderDash()" style="background:rgba(12,26,14,.7);border:1px solid rgba(114,184,136,.2);border-radius:8px;color:var(--paper);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 8px;outline:none;-webkit-appearance:none;"></select></div>
+      <div class="card" style="margin-bottom:14px;"><div class="tracker-wrap"><table class="tracker-tbl" style="width:100%"><thead id="cth"></thead><tbody id="ctb"></tbody></table></div></div>
+      <div class="section-title">Recent Activity</div><div class="card" id="d-rec"></div>
+      <div class="section-title">Active Loans</div><div class="card" id="d-al"></div>
+    </div>
+    <!-- ADMIN: MEMBERS -->
+    <div class="page" id="page-members">
+      <input class="search-bar" id="msrch" placeholder="🔍 Search members..." oninput="renderMembers()">
+      <div class="frow"><select id="mstf" onchange="renderMembers()"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select><button class="btn btn-p btn-sm" onclick="openSheet('sh-addmem')" style="margin-left:auto;flex-shrink:0">+ Add</button></div>
+      <div class="card" id="members-list"></div>
+    </div>
+    <!-- ADMIN: CONTRIBUTIONS -->
+    <div class="page" id="page-contributions">
+      <div class="frow"><select id="fc-m" onchange="renderContribs()"><option value="">All Members</option></select><select id="fc-mo" onchange="renderContribs()"><option value="">All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select><select id="fc-yr" onchange="renderContribs()"></select></div>
+      <div id="csum" class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:14px;"></div>
+      <div class="card" id="contribs-list"></div>
+    </div>
+    <!-- ADMIN: LOANS -->
+    <div class="page" id="page-loans">
+      <div class="frow"><select id="fl-m" onchange="renderLoans()"><option value="">All Members</option></select><select id="fl-s" onchange="renderLoans()"><option value="">All Status</option><option value="active">Active</option><option value="paid">Paid</option></select></div>
+      <div id="lsum" class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px;"></div>
+      <div class="card" id="loans-list"></div>
+    </div>
+    <!-- ADMIN: PENDING -->
+    <div class="page" id="page-pending">
+      <div class="ptabs" style="margin-bottom:10px;"><button class="ptab active" id="pt-reg" onclick="showPTab('reg')">👤 Registrations <span id="pt-reg-ct" style="background:rgba(201,96,96,.2);color:var(--rose);border-radius:6px;padding:1px 5px;font-size:8px">0</span></button><button class="ptab" id="pt-lr" onclick="showPTab('lr')">📄 Loans <span id="pt-lr-ct" style="background:rgba(212,168,67,.2);color:var(--gold);border-radius:6px;padding:1px 5px;font-size:8px">0</span></button></div>
+      <div id="ptab-reg"><div class="card" id="pending-reg-list"></div></div>
+      <div id="ptab-lr" style="display:none"><div class="card" id="pending-lr-list"></div></div>
+    </div>
+    <!-- ADMIN: MORE -->
+    <div class="page" id="page-more">
+      <div style="display:flex;align-items:center;gap:12px;padding:16px;background:rgba(18,32,24,.8);border-radius:16px;margin-bottom:14px;"><div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--grove),var(--sprout));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:var(--ink);" id="more-av">A</div><div><div style="font-size:15px;color:var(--dew);font-weight:500;" id="more-name">Admin</div><div style="font-size:10px;color:var(--leaf);text-transform:uppercase;letter-spacing:.08em;" id="more-role">Administrator</div></div></div>
+      <div class="card">
+        <div class="menu-item" onclick="go('reports')"><div class="mi-ico">📊</div><div><div class="mi-lbl">Reports & Analytics</div><div class="mi-sub">Charts, statements, insights</div></div><div class="mi-arr">›</div></div>
+        <div class="menu-item" onclick="go('pending')"><div class="mi-ico">⏳</div><div><div class="mi-lbl">Pending Approvals</div><div class="mi-sub" id="more-pending-sub">—</div></div><span id="more-pb" style="background:var(--rose);color:#fff;border-radius:10px;font-size:9px;padding:2px 8px;display:none;margin-right:4px;"></span><div class="mi-arr">›</div></div>
+        <div class="menu-item" onclick="go('settings')"><div class="mi-ico">⚙️</div><div><div class="mi-lbl">Settings</div><div class="mi-sub">Group settings, password</div></div><div class="mi-arr">›</div></div>
+        <div class="menu-item" onclick="expMem()"><div class="mi-ico">⬇️</div><div><div class="mi-lbl">Export Members CSV</div></div></div>
+        <div class="menu-item" onclick="expCon()"><div class="mi-ico">⬇️</div><div><div class="mi-lbl">Export Contributions CSV</div></div></div>
+      </div>
+      <div class="card" style="margin-top:8px;"><div class="menu-item" onclick="logout()"><div class="mi-ico">🚪</div><div class="mi-lbl" style="color:var(--rose)">Sign Out</div></div></div>
+    </div>
+    <!-- ADMIN: SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="section-title">Group Settings</div>
+      <div class="card"><div class="card-body">
+        <div class="fg"><label>Group Name</label><input id="s-gn"></div>
+        <div class="fg"><label>Monthly Contribution (UGX)</label><input id="s-mc" type="number" inputmode="numeric"></div>
+        <div class="fg"><label>Loan Interest Rate (%)</label><input id="s-ir" type="number" inputmode="decimal"></div>
+        <button class="btn btn-p btn-full" onclick="saveSettings()">Save Settings</button>
+      </div></div>
+      <div class="section-title">Change Password</div>
+      <div class="card"><div class="card-body">
+        <div class="fg"><label>Current Password</label><input id="s-op" type="password"></div>
+        <div class="fg"><label>New Password</label><input id="s-np" type="password"></div>
+        <button class="btn btn-o btn-full" onclick="changePass()">Update Password</button>
+      </div></div>
+    </div>
+    <!-- ADMIN: REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-label">Collection Rate</div><div class="stat-value" id="r-cr">0%</div><div class="prog"><div class="prog-f" id="r-crb" style="width:0%"></div></div></div>
+        <div class="stat"><div class="stat-label">Loan Recovery</div><div class="stat-value" id="r-lr">0%</div><div class="prog"><div class="prog-f" id="r-lrb" style="width:0%"></div></div></div>
+        <div class="stat g"><div class="stat-label">Interest Earned</div><div class="stat-value sm" id="r-ie">0</div></div>
+        <div class="stat"><div class="stat-label">Avg Contribution</div><div class="stat-value sm" id="r-ac">0</div></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Savings by Member</div></div><div class="card-body"><canvas id="ch-m"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">Monthly Collections</div></div><div class="card-body"><canvas id="ch-c"></canvas></div></div>
+    </div>
+    <!-- MEMBER: DASHBOARD -->
+    <div class="page" id="page-my-dashboard">
+      <div class="stats-grid">
+        <div class="stat g"><div class="stat-label">Total Savings</div><div class="stat-value sm" id="m-tot">0</div></div>
+        <div class="stat"><div class="stat-label">This Year</div><div class="stat-value sm" id="m-yr">0</div></div>
+        <div class="stat a" style="grid-column:span 2"><div class="stat-label">Active Loans</div><div class="stat-value" id="m-lc">0</div><div class="stat-sub" id="m-lb">—</div></div>
+      </div>
+      <div class="section-title">Monthly — <span id="m-yl"></span></div>
+      <div class="card"><div class="card-body"><div class="months-g" id="m-grid"></div></div></div>
+      <div class="section-title">Recent Transactions</div><div class="card" id="m-rec"></div>
+    </div>
+    <!-- MEMBER: SAVINGS -->
+    <div class="page" id="page-my-contributions"><div class="section-title">My Contribution History</div><div class="card" id="my-contrib-list"></div></div>
+    <!-- MEMBER: LOANS -->
+    <div class="page" id="page-my-loans"><div class="section-title">My Loans</div><div class="card" id="my-loans-list"></div></div>
+    <!-- MEMBER: REQUEST -->
+    <div class="page" id="page-my-loan-request">
+      <div class="info-box">🌙 Submit a loan request. The admin will review and notify you when it's processed.</div>
+      <div class="card"><div class="card-body">
+        <div class="fg"><label>Loan Amount (UGX)</label><input id="lr-amt" type="number" inputmode="numeric"></div>
+        <div class="fg"><label>Purpose</label><input id="lr-pur" placeholder="e.g. School fees, Business"></div>
+        <div class="fg"><label>Repayment Period</label><select id="lr-per"><option value="1">1 month</option><option value="2">2 months</option><option value="3">3 months</option><option value="6" selected>6 months</option><option value="12">12 months</option><option value="18">18 months</option><option value="24">24 months</option></select></div>
+        <div class="fg"><label>Notes (optional)</label><textarea id="lr-notes" rows="3"></textarea></div>
+        <button class="btn btn-p btn-full" id="lr-btn" onclick="submitLoanRequest()">Submit Request →</button>
+      </div></div>
+      <div class="section-title">My Requests</div><div id="my-lr-list"></div>
+    </div>
+    <!-- MEMBER: ACCOUNT -->
+    <div class="page" id="page-my-account">
+      <div style="display:flex;align-items:center;gap:12px;padding:16px;background:rgba(18,32,24,.8);border-radius:16px;margin-bottom:14px;"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--grove),var(--sprout));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:var(--ink);" id="mem-av">M</div><div><div style="font-size:16px;color:var(--dew);font-weight:500;" id="mem-name">Member</div><div style="font-size:10px;color:var(--leaf);" id="mem-code">—</div></div></div>
+      <div class="section-title">Account Statement</div>
+      <div class="card"><div class="card-header"><div class="card-title">Statement</div><select id="ms-yr" onchange="renderMyStmt()" style="background:rgba(12,26,14,.7);border:1px solid rgba(114,184,136,.2);border-radius:8px;color:var(--paper);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:6px 8px;outline:none;-webkit-appearance:none;"></select></div><div id="my-stmt-list"></div></div>
+      <div class="section-title">Security</div>
+      <div class="card"><div class="card-body">
+        <div class="fg"><label>Current Password</label><input id="m-op" type="password"></div>
+        <div class="fg"><label>New Password</label><input id="m-np" type="password"></div>
+        <button class="btn btn-o btn-full" onclick="changePass()">Update Password</button>
+      </div></div>
+      <div class="card" style="margin-top:8px;"><div class="menu-item" onclick="logout()"><div class="mi-ico">🚪</div><div class="mi-lbl" style="color:var(--rose)">Sign Out</div></div></div>
+    </div>
+  </div>
+  <nav id="bnav">
+    <div id="bnav-admin" style="display:contents">
+      <div class="ni active" id="ni-dashboard" onclick="go('dashboard',this)"><div class="ni-ico">⬡</div><div class="ni-lbl">Home</div></div>
+      <div class="ni" id="ni-members" onclick="go('members',this)"><div class="ni-ico">👥</div><div class="ni-lbl">Members</div></div>
+      <div class="ni" id="ni-contributions" onclick="go('contributions',this)"><div class="ni-ico">💰</div><div class="ni-lbl">Savings</div></div>
+      <div class="ni" id="ni-loans" onclick="go('loans',this)"><div class="ni-ico">📄</div><div class="ni-lbl">Loans</div></div>
+      <div class="ni" id="ni-more" onclick="go('more',this)"><div class="ni-ico">···</div><div class="ni-lbl">More</div><div class="ni-badge" id="pb"></div></div>
+    </div>
+    <div id="bnav-member" style="display:none">
+      <div class="ni active" id="ni-my-dashboard" onclick="go('my-dashboard',this)"><div class="ni-ico">⬡</div><div class="ni-lbl">Home</div></div>
+      <div class="ni" id="ni-my-contributions" onclick="go('my-contributions',this)"><div class="ni-ico">💰</div><div class="ni-lbl">Savings</div></div>
+      <div class="ni" id="ni-my-loans" onclick="go('my-loans',this)"><div class="ni-ico">📄</div><div class="ni-lbl">Loans</div></div>
+      <div class="ni" id="ni-my-loan-request" onclick="go('my-loan-request',this)"><div class="ni-ico">🙋</div><div class="ni-lbl">Request</div></div>
+      <div class="ni" id="ni-my-account" onclick="go('my-account',this)"><div class="ni-ico">👤</div><div class="ni-lbl">Account</div></div>
+    </div>
+  </nav>
+</div>
+<div id="install-banner"><div class="ib-text"><strong>Install Green Moon App</strong>Add to home screen for the best experience</div><button class="btn btn-p btn-sm" onclick="doInstall()">Install</button><button class="btn btn-sm" onclick="this.parentElement.classList.remove('show')" style="padding:8px;min-height:36px;color:rgba(184,223,198,.4)">✕</button></div>
+<div id="toast"></div>
+<div class="sheet-bg" id="sheet-bg" onclick="closeAllSheets()"></div>
+<!-- ADD MEMBER SHEET -->
+<div class="sheet" id="sh-addmem"><div class="sheet-handle"></div><div class="sheet-title">Add New Member</div><div class="sheet-sub">Create member account</div><div class="sheet-body"><div class="fr2"><div class="fg"><label>First Name</label><input id="am-f" autocapitalize="words"></div><div class="fg"><label>Last Name</label><input id="am-l" autocapitalize="words"></div></div><div class="fr2"><div class="fg"><label>Username</label><input id="am-u" autocapitalize="none"></div><div class="fg"><label>Password</label><input id="am-p" type="password"></div></div><div class="fg"><label>Phone</label><input id="am-ph" type="tel"></div><div class="fg"><label>National ID</label><input id="am-n" autocapitalize="characters"></div><div class="fr2"><div class="fg"><label>Joining Date</label><input id="am-d" type="date"></div><div class="fg"><label>Monthly Target</label><input id="am-t" type="number" inputmode="numeric"></div></div></div><div class="sheet-acts"><button class="btn btn-o btn-sm" onclick="closeAllSheets()">Cancel</button><button class="btn btn-p" onclick="adminAddMem()">Create →</button></div></div>
+<!-- EDIT MEMBER SHEET -->
+<div class="sheet" id="sh-editmem"><div class="sheet-handle"></div><div class="sheet-title">Edit Member</div><input type="hidden" id="em-id"><div class="sheet-body"><div class="fr2"><div class="fg"><label>First Name</label><input id="em-f"></div><div class="fg"><label>Last Name</label><input id="em-l"></div></div><div class="fg"><label>Phone</label><input id="em-ph" type="tel"></div><div class="fg"><label>National ID</label><input id="em-n" autocapitalize="characters"></div><div class="fr2"><div class="fg"><label>Joining Date</label><input id="em-d" type="date"></div><div class="fg"><label>Monthly Target</label><input id="em-t" type="number" inputmode="numeric"></div></div><div class="fg"><label>Status</label><select id="em-s"><option value="active">Active</option><option value="inactive">Inactive</option></select></div></div><div class="sheet-acts"><button class="btn btn-o btn-sm" onclick="closeAllSheets()">Cancel</button><button class="btn btn-p" onclick="saveEditMem()">Save →</button></div></div>
+<!-- RECORD CONTRIBUTION SHEET -->
+<div class="sheet" id="sh-addcon"><div class="sheet-handle"></div><div class="sheet-title">Record Contribution</div><div class="sheet-body"><div class="fg"><label>Member</label><select id="ac-m"></select></div><div class="fr2"><div class="fg"><label>Month</label><select id="ac-mo"><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select></div><div class="fg"><label>Year</label><input id="ac-yr" type="number" inputmode="numeric"></div></div><div class="fr2"><div class="fg"><label>Amount (UGX)</label><input id="ac-amt" type="number" inputmode="numeric"></div><div class="fg"><label>Type</label><select id="ac-ty"><option>Monthly Savings</option><option>Registration Fee</option><option>Fine</option><option>Other</option></select></div></div><div class="fg"><label>Date Received</label><input id="ac-dt" type="date"></div><div class="fg"><label>Notes</label><input id="ac-no"></div></div><div class="sheet-acts"><button class="btn btn-o btn-sm" onclick="closeAllSheets()">Cancel</button><button class="btn btn-p" onclick="addContrib()">Record →</button></div></div>
+<!-- ISSUE LOAN SHEET -->
+<div class="sheet" id="sh-addloan"><div class="sheet-handle"></div><div class="sheet-title">Issue Loan</div><div class="sheet-body"><div class="fg"><label>Member</label><select id="al-m"></select></div><div class="fr2"><div class="fg"><label>Principal (UGX)</label><input id="al-amt" type="number" inputmode="numeric"></div><div class="fg"><label>Interest (%)</label><input id="al-int" type="number" inputmode="decimal"></div></div><div class="fr2"><div class="fg"><label>Issue Date</label><input id="al-dt" type="date"></div><div class="fg"><label>Due Date</label><input id="al-due" type="date"></div></div><div class="fg"><label>Purpose</label><input id="al-pur"></div></div><div class="sheet-acts"><button class="btn btn-o btn-sm" onclick="closeAllSheets()">Cancel</button><button class="btn btn-p" onclick="issueLoan()">Issue →</button></div></div>
+<!-- REPAYMENT SHEET -->
+<div class="sheet" id="sh-repay"><div class="sheet-handle"></div><div class="sheet-title">Record Repayment</div><div id="repay-info" style="margin:12px 20px;background:rgba(12,26,14,.7);border-radius:12px;padding:14px;font-size:12px;color:var(--leaf);line-height:1.8;"></div><div class="sheet-body"><div class="fg"><label>Amount Paid (UGX)</label><input id="rp-amt" type="number" inputmode="numeric"></div><div class="fg"><label>Date</label><input id="rp-dt" type="date"></div><input type="hidden" id="rp-lid"></div><div class="sheet-acts"><button class="btn btn-o btn-sm" onclick="closeAllSheets()">Cancel</button><button class="btn btn-p" onclick="doRepay()">Record →</button></div></div>
+<!-- APPROVE LOAN REQUEST SHEET -->
+<div class="sheet" id="sh-approve-lr"><div class="sheet-handle"></div><div class="sheet-title">Approve Loan Request</div><input type="hidden" id="alr-id"><div id="alr-info" style="margin:12px 20px;background:rgba(12,26,14,.7);border-radius:12px;padding:14px;font-size:12px;color:var(--leaf);line-height:1.8;"></div><div class="sheet-body"><div class="fr2"><div class="fg"><label>Loan Amount (UGX)</label><input id="alr-amt" type="number" inputmode="numeric"></div><div class="fg"><label>Interest Rate (%)</label><input id="alr-int" type="number" inputmode="decimal"></div></div><div class="fr2"><div class="fg"><label>Issue Date</label><input id="alr-dt" type="date"></div><div class="fg"><label>Due Date</label><input id="alr-due" type="date"></div></div><div class="fg"><label>Admin Note (optional)</label><input id="alr-note"></div></div><div class="sheet-acts"><button class="btn btn-o btn-sm" onclick="closeAllSheets()">Cancel</button><button class="btn btn-p" onclick="doApproveLR()">Approve & Issue →</button></div></div>
+<!-- REJECT LOAN REQUEST SHEET -->
+<div class="sheet" id="sh-reject-lr"><div class="sheet-handle"></div><div class="sheet-title">Reject Request</div><input type="hidden" id="rlr-id"><div class="sheet-body"><div class="fg"><label>Reason for Rejection</label><textarea id="rlr-note" rows="3" placeholder="Reason required..."></textarea></div></div><div class="sheet-acts"><button class="btn btn-o btn-sm" onclick="closeAllSheets()">Cancel</button><button class="btn btn-d" onclick="doRejectLR()">Reject</button></div></div>
+
+<script>
+// ================================================================
+//  GREEN MOON — FULL STACK CLIENT
+//  Calls real API at /api/*  |  JWT auth  |  MongoDB backend
+// ================================================================
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+let G={settings:{},members:[],contributions:[],loans:[],loanRequests:[],pendingUsers:[]};
+let CU=null,pollTimer=null,lastTs=0,isOnline=navigator.onLine,deferredInstall=null;
+const C={green:'var(--sprout)',gold:'var(--gold)',red:'var(--rose)',amber:'var(--amber)'};
+const today=()=>new Date().toISOString().slice(0,10);
+const gv=id=>(document.getElementById(id)||{}).value||'';
+const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+const sv2=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+const nv=id=>parseFloat(gv(id))||0;
+const getMem=id=>G.members.find(m=>String(m._id)===String(id));
+const myMem=()=>CU?.memberId?getMem(CU.memberId):null;
+const initials=n=>(n||'?').split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
+const fmt=v=>'UGX '+Math.round(v||0).toLocaleString();
+const fmtS=v=>{const n=Math.round(v||0);return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(0)+'K':String(n);};
+const emptyState=(ico,msg)=>`<div class="empty"><div class="ei">${ico}</div><p>${msg}</p></div>`;
+
+// PWA
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;document.getElementById('install-banner').classList.add('show');});
+window.addEventListener('appinstalled',()=>{document.getElementById('install-banner').classList.remove('show');deferredInstall=null;});
+function doInstall(){if(deferredInstall){deferredInstall.prompt();deferredInstall.userChoice.then(()=>{document.getElementById('install-banner').classList.remove('show');deferredInstall=null;});}}
+
+// ── API FETCH ─────────────────────────────────────────────────────
+async function apiFetch(method,path,body){
+  const headers={'Content-Type':'application/json'};
+  const token=localStorage.getItem('gm-jwt');
+  if(token) headers['Authorization']='Bearer '+token;
+  const r=await fetch(path,{method,headers,body:body?JSON.stringify(body):undefined});
+  if(!r.ok){const e=await r.json().catch(()=>({error:'Request failed'}));throw new Error(e.error||'Request failed');}
+  return r.json();
+}
+
+async function loadData(){
+  const data=await apiFetch('GET','/api/data');
+  G=data;lastTs=data._ts||0;return data;
+}
+
+// ── NETWORK STATUS ────────────────────────────────────────────────
+function setNet(state){
+  const dot=document.getElementById('sdot'),txt=document.getElementById('stxt'),bar=document.getElementById('sbar-fill');
+  if(!dot)return;
+  dot.className='sync-dot'+(state==='offline'?' off':state==='syncing'?' spin':'');
+  txt.textContent=state==='live'?'LIVE':state==='syncing'?'SYNC':'OFF';
+  if(state==='syncing'){bar.style.width='65%';}else{bar.style.width='100%';setTimeout(()=>bar.style.width='0',500);}
+}
+window.addEventListener('online',()=>{isOnline=true;setNet('live');pullCloud();toast('🌐 Back online',C.green);});
+window.addEventListener('offline',()=>{isOnline=false;setNet('offline');toast('📵 Offline mode',C.amber);});
+
+async function pullCloud(){
+  if(!isOnline)return;
+  try{
+    setNet('syncing');
+    const data=await apiFetch('GET','/api/data');
+    if(data._ts!==lastTs){
+      const prevPending=pendingCount();
+      G=data;lastTs=data._ts;
+      const nowPending=pendingCount();
+      if(CU?.role==='admin'){updatePbadge();if(nowPending>prevPending){flashPbadge();toast(`🔔 New pending (${nowPending})`,C.gold);}}
+      if(CU?.role!=='admin'&&CU?.memberId){
+        (G.loanRequests||[]).forEach(r=>{
+          if(r.memberId&&String(r.memberId)===String(CU.memberId)){
+            if(r.status==='approved'&&!r._notified){toast('✅ Loan request approved!',C.green);}
+            else if(r.status==='rejected'&&!r._notified){toast('❌ Loan request declined',C.red);}
+          }
+        });
+      }
+      refreshPage();
+    }
+    setNet('live');
+  }catch(e){setNet('offline');}
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg,color=C.green){
+  const el=document.getElementById('toast');
+  el.innerHTML=`<span style="font-size:17px">${msg.match(/^[\p{Emoji}]/u)?.[0]||'✓'}</span><span style="flex:1">${msg.replace(/^[\p{Emoji}]\s*/u,'')}</span>`;
+  el.style.borderColor=color;el.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+// ── SHEETS ────────────────────────────────────────────────────────
+function openSheet(id){document.getElementById(id).classList.add('open');document.getElementById('sheet-bg').classList.add('open');}
+function closeAllSheets(){document.querySelectorAll('.sheet.open').forEach(s=>s.classList.remove('open'));document.getElementById('sheet-bg').classList.remove('open');}
+
+// ── FILL SELECTS ──────────────────────────────────────────────────
+function fillYears(){
+  const yr=new Date().getFullYear();
+  ['d-yr','fc-yr','ms-yr'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value||yr;el.innerHTML=[yr-1,yr,yr+1].map(y=>`<option value="${y}"${y==cur?' selected':''}>${y}</option>`).join('');});
+}
+function fillMems(){
+  const all=G.members||[];
+  const allOpts='<option value="">All Members</option>'+all.map(m=>`<option value="${m._id}">${m.name}</option>`).join('');
+  const actOpts=all.filter(m=>m.status==='active').map(m=>`<option value="${m._id}">${m.name}</option>`).join('');
+  ['fc-m','fl-m'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=allOpts;});
+  ['ac-m','al-m'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=actOpts;});
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────
+function swTab(t,btn){document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('tab-login').style.display=t==='login'?'block':'none';document.getElementById('tab-register').style.display=t==='register'?'block':'none';document.getElementById('aerr').style.display='none';document.getElementById('aok').style.display='none';}
+function showErr(m){const e=document.getElementById('aerr');e.textContent=m;e.style.display='block';document.getElementById('aok').style.display='none';}
+
+async function doLogin(){
+  const btn=document.getElementById('lbtn');btn.disabled=true;btn.textContent='Signing in...';
+  try{
+    const data=await apiFetch('POST','/api/auth/login',{username:gv('lu').trim(),password:gv('lp')});
+    localStorage.setItem('gm-jwt',data.token);
+    CU=data.user;
+    await loadData();
+    startApp();
+  }catch(e){showErr(e.message);}
+  btn.disabled=false;btn.textContent='Sign In →';
+}
+
+async function doRegister(){
+  const btn=document.getElementById('rbtn');btn.disabled=true;btn.textContent='Registering...';
+  try{
+    await apiFetch('POST','/api/auth/register',{username:gv('ru').trim(),password:gv('rpw'),name:gv('rf').trim()+' '+gv('rl').trim(),phone:gv('rph'),nid:gv('rni')});
+    document.getElementById('aok').textContent='✓ Registration submitted! Wait for admin approval.';
+    document.getElementById('aok').style.display='block';document.getElementById('aerr').style.display='none';
+    ['rf','rl','rph','rni','ru','rpw'].forEach(id=>sv(id,''));
+    setTimeout(()=>swTab('login',document.querySelectorAll('.tab')[0]),2500);
+  }catch(e){showErr(e.message);}
+  btn.disabled=false;btn.textContent='Create Account →';
+}
+
+// ── START APP ─────────────────────────────────────────────────────
+function startApp(){
+  document.getElementById('auth').style.display='none';
+  document.getElementById('main').classList.add('show');
+  const isAdmin=CU.role==='admin';
+  const m=myMem();const name=m?m.name:(isAdmin?'Administrator':CU.username);
+  document.getElementById('bnav').style.display='flex';
+  document.getElementById('bnav-admin').style.display=isAdmin?'contents':'none';
+  document.getElementById('bnav-member').style.display=isAdmin?'none':'flex';
+  sv2('more-av',initials(name));sv2('more-name',name);sv2('more-role',isAdmin?'Administrator':'Member');
+  sv2('mem-av',initials(name));sv2('mem-name',name);sv2('mem-code',m?.memberCode||'—');
+  fillYears();
+  if(isAdmin){go('dashboard');updatePbadge();}else go('my-dashboard');
+  setNet(isOnline?'live':'offline');
+  if(pollTimer)clearInterval(pollTimer);
+  pollTimer=setInterval(pullCloud,5000);
+}
+
+function logout(){
+  if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
+  CU=null;localStorage.removeItem('gm-jwt');
+  document.getElementById('main').classList.remove('show');
+  document.getElementById('bnav').style.display='none';
+  document.getElementById('auth').style.display='block';
+  closeAllSheets();
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────
+const PAGE_TITLES={dashboard:'Dashboard',members:'Members',contributions:'Contributions',loans:'Loans',pending:'Pending',reports:'Reports',more:'Menu',settings:'Settings','my-dashboard':'My Dashboard','my-contributions':'My Savings','my-loans':'My Loans','my-loan-request':'Request Loan','my-account':'My Account'};
+function go(pg,navEl){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  if(navEl)navEl.classList.add('active');else{const ni=document.getElementById('ni-'+pg);if(ni)ni.classList.add('active');}
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const page=document.getElementById('page-'+pg);if(page)page.classList.add('active');
+  sv2('hdr-title',PAGE_TITLES[pg]||pg);
+  const act=document.getElementById('hdr-act');act.innerHTML='';
+  if(pg==='members')act.innerHTML=`<button class="btn btn-p btn-sm" onclick="openSheet('sh-addmem')">+ Add</button>`;
+  if(pg==='contributions')act.innerHTML=`<button class="btn btn-p btn-sm" onclick="openSheet('sh-addcon')">+ Record</button>`;
+  if(pg==='loans')act.innerHTML=`<button class="btn btn-p btn-sm" onclick="openSheet('sh-addloan')">+ Loan</button>`;
+  document.getElementById('pages').scrollTo({top:0,behavior:'instant'});
+  if(pg==='dashboard')renderDash();
+  if(pg==='members'){fillMems();renderMembers();}
+  if(pg==='contributions'){fillMems();renderContribs();}
+  if(pg==='loans'){fillMems();renderLoans();}
+  if(pg==='pending')renderPending();
+  if(pg==='reports')renderReports();
+  if(pg==='more')updatePbadge();
+  if(pg==='settings')loadSettings();
+  if(pg==='my-dashboard')renderMyDash();
+  if(pg==='my-contributions')renderMyContribs();
+  if(pg==='my-loans')renderMyLoans();
+  if(pg==='my-loan-request')renderMyLoanRequests();
+  if(pg==='my-account'){fillYears();renderMyStmt();}
+}
+function refreshPage(){const pg=document.querySelector('.page.active')?.id?.replace('page-','');if(pg)go(pg);}
+
+// ── MEMBERS ───────────────────────────────────────────────────────
+async function adminAddMem(){
+  const f=gv('am-f').trim(),l=gv('am-l').trim(),u=gv('am-u').trim(),p=gv('am-p');
+  if(!f||!l||!u||!p){toast('Fill all required fields',C.red);return;}
+  try{
+    await apiFetch('POST','/api/members',{firstName:f,lastName:l,username:u,password:p,phone:gv('am-ph'),nid:gv('am-n'),joined:gv('am-d')||today(),target:nv('am-t')||100000});
+    await loadData();closeAllSheets();toast(`✓ ${f} ${l} added`);renderMembers();renderDash();
+    ['am-f','am-l','am-u','am-p','am-ph','am-n','am-t'].forEach(id=>sv(id,''));
+  }catch(e){toast(e.message,C.red);}
+}
+function renderMembers(){
+  const q=gv('msrch').toLowerCase(),sf=gv('mstf');
+  let list=(G.members||[]).filter(m=>(!q||m.name.toLowerCase().includes(q)||(m.memberCode||'').toLowerCase().includes(q)||(m.phone||'').includes(q))&&(!sf||m.status===sf));
+  const el=document.getElementById('members-list');
+  if(!list.length){el.innerHTML=emptyState('👥','No members found');return;}
+  el.innerHTML=list.map(m=>{
+    const s=(G.contributions||[]).filter(c=>String(c.memberId)===String(m._id)).reduce((t,c)=>t+c.amount,0);
+    return`<div class="list-item"><div class="li-av">${initials(m.name)}</div><div class="li-main"><div class="li-name">${m.name}</div><div class="li-sub">${m.memberCode||'—'} · ${m.phone||'—'}</div><div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap"><span class="badge ${m.status==='active'?'bg':'br'}">${m.status}</span><span class="badge bm">Saved: ${fmtS(s)}</span></div></div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn btn-o btn-sm" onclick="openEditMem('${m._id}')">Edit</button><button class="btn btn-sm ${m.status==='active'?'btn-d':'btn-gold'}" onclick="toggleMem('${m._id}')">${m.status==='active'?'Off':'On'}</button></div></div>`;
+  }).join('');
+}
+function openEditMem(id){
+  const m=getMem(id);if(!m)return;
+  const pts=m.name.split(' ');
+  sv('em-id',id);sv('em-f',pts[0]||'');sv('em-l',pts.slice(1).join(' ')||'');
+  sv('em-ph',m.phone||'');sv('em-n',m.nid||'');sv('em-d',m.joined||'');sv('em-t',m.target||'');
+  document.getElementById('em-s').value=m.status||'active';openSheet('sh-editmem');
+}
+async function saveEditMem(){
+  const id=gv('em-id'),f=gv('em-f').trim(),l=gv('em-l').trim();
+  if(!f||!l){toast('Name required',C.red);return;}
+  try{
+    await apiFetch('PUT',`/api/members/${id}`,{firstName:f,lastName:l,phone:gv('em-ph'),nid:gv('em-n'),joined:gv('em-d'),target:nv('em-t')||100000,status:gv('em-s')});
+    await loadData();closeAllSheets();toast('✓ Member updated');renderMembers();
+  }catch(e){toast(e.message,C.red);}
+}
+async function toggleMem(id){
+  const m=getMem(id);if(!m)return;
+  try{await apiFetch('PUT',`/api/members/${id}`,{status:m.status==='active'?'inactive':'active'});await loadData();renderMembers();}catch(e){toast(e.message,C.red);}
+}
+
+// ── CONTRIBUTIONS ─────────────────────────────────────────────────
+async function addContrib(){
+  const mid=gv('ac-m'),amt=parseFloat(gv('ac-amt'));
+  if(!mid||!amt||amt<=0){toast('Fill all required fields',C.red);return;}
+  try{
+    await apiFetch('POST','/api/contributions',{memberId:mid,amount:amt,month:gv('ac-mo'),year:parseInt(gv('ac-yr'))||new Date().getFullYear(),type:gv('ac-ty'),date:gv('ac-dt')||today(),notes:gv('ac-no')});
+    await loadData();closeAllSheets();toast(`✓ Recorded: ${fmt(amt)}`);sv('ac-amt','');sv('ac-no','');renderContribs();renderDash();
+  }catch(e){toast(e.message,C.red);}
+}
+function renderContribs(){
+  const mf=gv('fc-m')||'',mo=gv('fc-mo')||'',yr=gv('fc-yr')||'';
+  let list=[...(G.contributions||[])].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+  if(mf)list=list.filter(c=>String(c.memberId)===mf);if(mo)list=list.filter(c=>c.month===mo);if(yr)list=list.filter(c=>String(c.year)===yr);
+  const tot=list.reduce((s,c)=>s+c.amount,0);
+  document.getElementById('csum').innerHTML=`<div class="stat"><div class="stat-label">Total Shown</div><div class="stat-value sm">${fmtS(tot)}</div></div><div class="stat"><div class="stat-label">Records</div><div class="stat-value">${list.length}</div></div>`;
+  const el=document.getElementById('contribs-list');
+  if(!list.length){el.innerHTML=emptyState('💰','No contributions found');return;}
+  el.innerHTML=list.map(c=>{const m=getMem(c.memberId);return`<div class="list-item"><div class="li-av">${initials(m?.name||'?')}</div><div class="li-main"><div class="li-name">${m?.name||'?'}</div><div class="li-sub">${c.month} ${c.year} · ${c.date}</div><span class="badge bg">${c.type}</span></div><div class="li-right"><div class="li-val g">${fmtS(c.amount)}</div></div></div>`;}).join('');
+}
+
+// ── LOANS ─────────────────────────────────────────────────────────
+async function issueLoan(){
+  const mid=gv('al-m'),amt=parseFloat(gv('al-amt'));
+  if(!mid||!amt||amt<=0){toast('Fill all required fields',C.red);return;}
+  try{
+    await apiFetch('POST','/api/loans',{memberId:mid,amount:amt,interest:parseFloat(gv('al-int'))||10,date:gv('al-dt')||today(),due:gv('al-due'),purpose:gv('al-pur')});
+    await loadData();closeAllSheets();toast(`✓ Loan issued: ${fmt(amt)}`);renderLoans();renderDash();
+  }catch(e){toast(e.message,C.red);}
+}
+function openRepay(id){
+  const l=(G.loans||[]).find(x=>String(x._id)===String(id));if(!l)return;
+  const m=getMem(l.memberId),tot=l.amount*(1+l.interest/100),bal=Math.max(0,tot-l.paid);
+  document.getElementById('repay-info').innerHTML=`<strong style="color:var(--dew)">${m?.name||'?'}</strong><br>Principal: ${fmt(l.amount)} · Rate: ${l.interest}%<br>Total Due: ${fmt(tot)} · Paid: <span style="color:var(--sprout)">${fmt(l.paid)}</span><br><span style="color:var(--amber)">Balance: ${fmt(bal)}</span>`;
+  sv('rp-lid',id);sv('rp-amt','');sv('rp-dt',today());openSheet('sh-repay');
+}
+async function doRepay(){
+  const lid=gv('rp-lid'),amt=parseFloat(gv('rp-amt'));
+  if(!amt||amt<=0){toast('Enter valid amount',C.red);return;}
+  try{
+    await apiFetch('POST',`/api/loans/${lid}/repay`,{amount:amt,date:gv('rp-dt')||today()});
+    await loadData();closeAllSheets();toast(`✓ Repayment: ${fmt(amt)}`);renderLoans();renderDash();
+  }catch(e){toast(e.message,C.red);}
+}
+function renderLoans(){
+  const mf=gv('fl-m')||'',sf=gv('fl-s')||'';
+  let list=[...(G.loans||[])];if(mf)list=list.filter(l=>String(l.memberId)===mf);if(sf)list=list.filter(l=>l.status===sf);
+  const out=(G.loans||[]).filter(l=>l.status==='active').reduce((s,l)=>s+l.amount,0);
+  const paid=(G.loans||[]).reduce((s,l)=>s+l.paid,0);
+  document.getElementById('lsum').innerHTML=`<div class="stat a"><div class="stat-label">Outstanding</div><div class="stat-value sm">${fmtS(out)}</div></div><div class="stat g"><div class="stat-label">Repaid</div><div class="stat-value sm">${fmtS(paid)}</div></div><div class="stat"><div class="stat-label">Active</div><div class="stat-value">${(G.loans||[]).filter(l=>l.status==='active').length}</div></div>`;
+  const el=document.getElementById('loans-list');
+  if(!list.length){el.innerHTML=emptyState('📄','No loans found');return;}
+  el.innerHTML=list.map(l=>{const m=getMem(l.memberId),tot=l.amount*(1+l.interest/100),bal=Math.max(0,tot-l.paid);return`<div class="list-item"><div class="li-av">${initials(m?.name||'?')}</div><div class="li-main"><div class="li-name">${m?.name||'?'}</div><div class="li-sub">${fmt(l.amount)} @ ${l.interest}% · Due: ${l.due||'—'}</div><div style="margin-top:4px;display:flex;gap:6px;align-items:center;"><span class="badge ${l.status==='paid'?'bg':'bo'}">${l.status}</span><span style="font-size:9px;color:${bal>0?'var(--rose)':'var(--sprout)'}">Bal: ${fmtS(bal)}</span></div></div><div>${l.status!=='paid'?`<button class="btn btn-gold btn-sm" onclick="openRepay('${l._id}')">Repay</button>`:`<span style="color:var(--sprout);font-size:18px">✓</span>`}</div></div>`;}).join('');
+}
+
+// ── LOAN REQUESTS ─────────────────────────────────────────────────
+async function submitLoanRequest(){
+  const m=myMem();if(!m){toast('Profile not set up yet',C.red);return;}
+  const amt=parseFloat(gv('lr-amt')),pur=gv('lr-pur').trim();
+  if(!amt||amt<=0){toast('Enter a valid amount',C.red);return;}
+  if(!pur){toast('Please describe the purpose',C.red);return;}
+  const btn=document.getElementById('lr-btn');btn.disabled=true;btn.textContent='Submitting...';
+  try{
+    await apiFetch('POST','/api/loan-requests',{amount:amt,purpose:pur,period:parseInt(gv('lr-per'))||6,notes:gv('lr-notes').trim()});
+    await loadData();toast('✅ Request submitted!');sv('lr-amt','');sv('lr-pur','');sv('lr-notes','');renderMyLoanRequests();
+  }catch(e){toast(e.message,C.red);}
+  btn.disabled=false;btn.textContent='Submit Request →';
+}
+function renderMyLoanRequests(){
+  const m=myMem();if(!m)return;
+  const list=(G.loanRequests||[]).filter(r=>String(r.memberId)===String(m._id)).sort((a,b)=>new Date(b.requestedDate||0)-new Date(a.requestedDate||0));
+  const el=document.getElementById('my-lr-list');if(!el)return;
+  if(!list.length){el.innerHTML=emptyState('📄','No requests yet');return;}
+  const sc={pending:'bo',approved:'bg',rejected:'br'};
+  el.innerHTML=list.map(r=>{
+    const loan=r.loanId?(G.loans||[]).find(l=>String(l._id)===String(r.loanId)):null;
+    return`<div class="lr-card ${r.status}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div class="lr-amount">${fmt(r.amount)}</div><span class="badge ${sc[r.status]||'bm'}">${r.status}</span></div><div style="font-size:11px;color:var(--leaf);line-height:1.9;"><strong style="color:var(--dew)">${r.purpose}</strong><br>${r.period} months · Submitted ${r.requestedDate}${r.adminNote?`<br><span style="color:${r.status==='approved'?'var(--sprout)':'var(--rose)'}">Admin: ${r.adminNote}</span>`:''}${loan?`<br><span style="color:var(--sprout)">✓ Issued ${fmt(loan.amount)} @ ${loan.interest}%, due ${loan.due||'TBD'}</span>`:''}</div></div>`;
+  }).join('');
+}
+
+// ── PENDING (ADMIN) ───────────────────────────────────────────────
+function pendingCount(){return (G.pendingUsers||[]).length+(G.loanRequests||[]).filter(r=>r.status==='pending').length;}
+function updatePbadge(){
+  const reg=(G.pendingUsers||[]).length,lr=(G.loanRequests||[]).filter(r=>r.status==='pending').length,n=reg+lr;
+  const b=document.getElementById('pb'),mb=document.getElementById('more-pb');
+  if(b){b.textContent=n;b.classList.toggle('show',n>0);}
+  if(mb){mb.textContent=n;mb.style.display=n>0?'inline':'none';}
+  sv2('pt-reg-ct',reg);sv2('pt-lr-ct',lr);
+  sv2('more-pending-sub',n>0?`${n} item${n!==1?'s':''} need attention`:'All clear');
+}
+function flashPbadge(){const b=document.getElementById('pb');if(!b)return;b.style.animation='none';b.offsetHeight;b.style.animation='pop .4s ease 3';}
+function showPTab(tab){document.getElementById('ptab-reg').style.display=tab==='reg'?'block':'none';document.getElementById('ptab-lr').style.display=tab==='lr'?'block':'none';document.getElementById('pt-reg').classList.toggle('active',tab==='reg');document.getElementById('pt-lr').classList.toggle('active',tab==='lr');}
+function renderPending(){
+  const regEl=document.getElementById('pending-reg-list');
+  const regList=G.pendingUsers||[];
+  regEl.innerHTML=regList.length?regList.map(u=>{const d=u.pd||{};return`<div class="list-item"><div class="li-av">${initials(d.name||u.username)}</div><div class="li-main"><div class="li-name">${d.name||u.username}</div><div class="li-sub">@${u.username} · ${d.phone||'—'}</div><div class="li-sub">${d.reg||'—'}</div></div><div style="display:flex;flex-direction:column;gap:6px;"><button class="btn btn-p btn-sm" onclick="approveUser('${u._id}')">✓</button><button class="btn btn-d btn-sm" onclick="rejectUser('${u._id}')">✕</button></div></div>`;}).join(''):emptyState('✅','No pending registrations');
+  const lrEl=document.getElementById('pending-lr-list');
+  const lrList=(G.loanRequests||[]).filter(r=>r.status==='pending');
+  lrEl.innerHTML=lrList.length?lrList.map(r=>{const m=getMem(r.memberId);return`<div class="list-item"><div class="li-av">${initials(m?.name||'?')}</div><div class="li-main"><div class="li-name">${m?.name||'?'} <span class="badge bm">${m?.memberCode||'—'}</span></div><div class="li-sub">${fmt(r.amount)} · ${r.period}mo</div><div class="li-sub">${r.purpose}</div></div><div style="display:flex;flex-direction:column;gap:6px;"><button class="btn btn-p btn-sm" onclick="openApproveLR('${r._id}')">✓</button><button class="btn btn-d btn-sm" onclick="openRejectLR('${r._id}')">✕</button></div></div>`;}).join(''):emptyState('📄','No pending loan requests');
+  updatePbadge();
+}
+async function approveUser(uid){
+  try{await apiFetch('PUT',`/api/users/${uid}/approve`);await loadData();renderPending();updatePbadge();toast('✓ Account approved');}catch(e){toast(e.message,C.red);}
+}
+async function rejectUser(uid){
+  if(!confirm('Reject this registration?'))return;
+  try{await apiFetch('DELETE',`/api/users/${uid}`);await loadData();renderPending();updatePbadge();toast('Registration rejected');}catch(e){toast(e.message,C.red);}
+}
+function openApproveLR(id){
+  const r=(G.loanRequests||[]).find(x=>String(x._id)===String(id));if(!r)return;
+  const m=getMem(r.memberId);
+  sv('alr-id',id);
+  document.getElementById('alr-info').innerHTML=`<strong style="color:var(--dew)">${m?.name||'?'}</strong> (${m?.memberCode||'—'})<br>Requested: ${fmt(r.amount)} for ${r.period}mo<br>Purpose: ${r.purpose}${r.notes?`<br>Notes: ${r.notes}`:''}`;
+  sv('alr-amt',r.amount);sv('alr-int',(G.settings?.interest)||10);sv('alr-dt',today());sv('alr-note','');
+  const due=new Date();due.setMonth(due.getMonth()+r.period);sv('alr-due',due.toISOString().slice(0,10));
+  openSheet('sh-approve-lr');
+}
+async function doApproveLR(){
+  const id=gv('alr-id'),amt=parseFloat(gv('alr-amt'));
+  if(!amt||amt<=0){toast('Enter valid amount',C.red);return;}
+  try{
+    await apiFetch('PUT',`/api/loan-requests/${id}/approve`,{amount:amt,interest:parseFloat(gv('alr-int'))||10,date:gv('alr-dt')||today(),due:gv('alr-due'),adminNote:gv('alr-note')});
+    await loadData();closeAllSheets();toast(`✅ Loan approved: ${fmt(amt)}`);renderPending();renderLoans();renderDash();
+  }catch(e){toast(e.message,C.red);}
+}
+function openRejectLR(id){sv('rlr-id',id);sv('rlr-note','');openSheet('sh-reject-lr');}
+async function doRejectLR(){
+  const id=gv('rlr-id'),note=gv('rlr-note').trim();
+  if(!note){toast('Please give a reason',C.red);return;}
+  try{await apiFetch('PUT',`/api/loan-requests/${id}/reject`,{adminNote:note});await loadData();closeAllSheets();toast('Request rejected');renderPending();}catch(e){toast(e.message,C.red);}
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────
+function renderDash(){
+  fillMems();
+  const aM=(G.members||[]).filter(m=>m.status==='active').length;
+  const totS=(G.contributions||[]).reduce((s,c)=>s+c.amount,0);
+  const aL=(G.loans||[]).filter(l=>l.status==='active');
+  const out=aL.reduce((s,l)=>s+l.amount,0);
+  sv2('d-mem',aM);sv2('d-mems',(G.members||[]).length+' registered');
+  sv2('d-sav',fmtS(totS));sv2('d-savs',(G.contributions||[]).length+' contributions');
+  sv2('d-lo',fmtS(out));sv2('d-los',aL.length+' active');
+  sv2('d-fund',fmtS(Math.max(0,totS-out)));
+  const yr=parseInt(gv('d-yr')||new Date().getFullYear());
+  const th=document.getElementById('cth'),tb=document.getElementById('ctb');
+  if(th&&tb){
+    th.innerHTML='<tr><th>Member</th>'+MONTHS.map(m=>`<th>${m.slice(0,3)}</th>`).join('')+'<th>Total</th></tr>';
+    const aMs=(G.members||[]).filter(m=>m.status==='active');
+    const now=new Date();
+    tb.innerHTML=aMs.map(m=>{
+      const myC=(G.contributions||[]).filter(c=>String(c.memberId)===String(m._id));
+      const cells=MONTHS.map((mo,i)=>{
+        const c=myC.find(x=>x.month===mo&&x.year===yr&&x.type==='Monthly Savings');
+        if(c)return`<td style="text-align:center;color:var(--sprout)">✓</td>`;
+        if(i>now.getMonth()&&yr>=now.getFullYear())return`<td style="text-align:center;color:rgba(184,223,198,.2)">·</td>`;
+        return`<td style="text-align:center;color:var(--rose)">✗</td>`;
+      }).join('');
+      const yt=myC.filter(c=>c.year===yr).reduce((s,c)=>s+c.amount,0);
+      return`<tr><td style="font-size:11px;white-space:nowrap;font-weight:500;color:var(--dew)">${m.name.split(' ')[0]}</td>${cells}<td style="color:var(--sprout);font-size:10px">${fmtS(yt)}</td></tr>`;
+    }).join('')||`<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--leaf);font-size:12px">No active members</td></tr>`;
+  }
+  const rec=[...(G.contributions||[])].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).slice(0,5);
+  document.getElementById('d-rec').innerHTML=rec.length?rec.map(c=>{const m=getMem(c.memberId);return`<div class="list-item"><div class="li-av">${initials(m?.name||'?')}</div><div class="li-main"><div class="li-name">${m?.name||'?'}</div><div class="li-sub">${c.type} · ${c.month}</div></div><div class="li-right"><div class="li-val g">${fmtS(c.amount)}</div><div class="li-tag">${c.date}</div></div></div>`;}).join(''):emptyState('📋','No activity yet');
+  document.getElementById('d-al').innerHTML=aL.length?aL.slice(0,5).map(l=>{const m=getMem(l.memberId),bal=Math.max(0,l.amount*(1+l.interest/100)-l.paid);return`<div class="list-item"><div class="li-av">${initials(m?.name||'?')}</div><div class="li-main"><div class="li-name">${m?.name||'?'}</div><div class="li-sub">Due: ${l.due||'—'}</div></div><div class="li-right"><div class="li-val r">${fmtS(bal)}</div><div class="li-tag">balance</div></div></div>`;}).join(''):emptyState('✅','No active loans');
+}
+
+// ── REPORTS ───────────────────────────────────────────────────────
+function renderReports(){
+  fillMems();
+  const totS=(G.contributions||[]).reduce((s,c)=>s+c.amount,0);
+  const totPaid=(G.loans||[]).reduce((s,l)=>s+l.paid,0),totDue=(G.loans||[]).reduce((s,l)=>s+l.amount*(1+l.interest/100),0);
+  const rec=totDue>0?Math.min(100,Math.round(totPaid/totDue*100)):0;
+  const aM=(G.members||[]).filter(m=>m.status==='active').length,yr=new Date().getFullYear();
+  const exp=aM*12,act=(G.contributions||[]).filter(c=>c.year===yr&&c.type==='Monthly Savings').length;
+  const col=exp>0?Math.min(100,Math.round(act/exp*100)):0;
+  const avg=(G.contributions||[]).length?Math.round(totS/(G.contributions||[]).length):0;
+  sv2('r-cr',col+'%');document.getElementById('r-crb').style.width=col+'%';
+  sv2('r-lr',rec+'%');document.getElementById('r-lrb').style.width=rec+'%';
+  sv2('r-ie',fmtS((G.loans||[]).reduce((s,l)=>s+Math.max(0,l.paid-l.amount),0)));
+  sv2('r-ac',fmtS(avg));
+  setTimeout(()=>{
+    drawBar('ch-m',(G.members||[]).slice(0,8).map(m=>m.name.split(' ')[0]),(G.members||[]).slice(0,8).map(m=>(G.contributions||[]).filter(c=>String(c.memberId)===String(m._id)).reduce((s,c)=>s+c.amount,0)));
+    const mm={};(G.contributions||[]).forEach(c=>{const k=c.month?.slice(0,3)+' '+c.year;mm[k]=(mm[k]||0)+c.amount;});const ks=Object.keys(mm).slice(-8);
+    drawLine('ch-c',ks,ks.map(k=>mm[k]));
+  },100);
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────
+function loadSettings(){sv('s-gn',G.settings?.name||'');sv('s-mc',G.settings?.monthly||100000);sv('s-ir',G.settings?.interest||10);}
+async function saveSettings(){
+  try{const s=await apiFetch('PUT','/api/settings',{name:gv('s-gn'),monthly:parseFloat(gv('s-mc'))||100000,interest:parseFloat(gv('s-ir'))||10});G.settings=s;toast('✓ Settings saved');}catch(e){toast(e.message,C.red);}
+}
+async function changePass(){
+  const op=gv('s-op')||gv('m-op'),np=gv('s-np')||gv('m-np');
+  try{await apiFetch('PUT','/api/auth/password',{oldPassword:op,newPassword:np});sv('s-op','');sv('s-np','');sv('m-op','');sv('m-np','');toast('✓ Password updated');}catch(e){toast(e.message,C.red);}
+}
+
+// ── MEMBER VIEWS ──────────────────────────────────────────────────
+function renderMyDash(){
+  const m=myMem();
+  if(!m){document.getElementById('page-my-dashboard').innerHTML='<div class="empty" style="padding:60px"><div class="ei">⏳</div><p>Your profile is being set up.<br>Check back soon.</p></div>';return;}
+  const myC=(G.contributions||[]).filter(c=>String(c.memberId)===String(m._id));
+  const tot=myC.reduce((s,c)=>s+c.amount,0);const yr=new Date().getFullYear();
+  const yrT=myC.filter(c=>c.year===yr).reduce((s,c)=>s+c.amount,0);
+  const myL=(G.loans||[]).filter(l=>String(l.memberId)===String(m._id)&&l.status==='active');
+  const lBal=myL.reduce((t,l)=>t+Math.max(0,l.amount*(1+l.interest/100)-l.paid),0);
+  sv2('m-tot',fmtS(tot));sv2('m-yr',fmtS(yrT));sv2('m-lc',myL.length);sv2('m-lb',myL.length?'Bal: '+fmtS(lBal):'No active loans');sv2('m-yl',yr);
+  const now=new Date();
+  document.getElementById('m-grid').innerHTML=MONTHS.map((mo,i)=>{
+    const c=myC.find(x=>x.month===mo&&x.year===yr&&x.type==='Monthly Savings');
+    const past=i<now.getMonth()||yr<now.getFullYear(),cur=i===now.getMonth()&&yr===now.getFullYear();
+    let cls='fm',icon='·',amt='—';
+    if(c){cls='pm';icon='✓';amt=fmtS(c.amount);}else if(past||cur){cls='lm';icon='✗';amt='Due';}
+    return`<div class="mon ${cls}"><div class="mn">${mo.slice(0,3)}</div><div class="ms">${icon}</div><div class="ma" style="color:${c?'var(--sprout)':past||cur?'var(--rose)':'rgba(184,223,198,.3)'}">${amt}</div></div>`;
+  }).join('');
+  const rec=[...myC].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).slice(0,5);
+  document.getElementById('m-rec').innerHTML=rec.length?rec.map(c=>`<div class="list-item"><div class="li-main"><div class="li-name" style="font-size:12px">${c.type}</div><div class="li-sub">${c.month} ${c.year} · ${c.date}</div></div><div class="li-right"><div class="li-val g">${fmtS(c.amount)}</div></div></div>`).join(''):emptyState('📋','No transactions yet');
+}
+function renderMyContribs(){
+  const m=myMem();if(!m)return;
+  const list=[...(G.contributions||[]).filter(c=>String(c.memberId)===String(m._id))].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+  document.getElementById('my-contrib-list').innerHTML=list.length?list.map(c=>`<div class="list-item"><div class="li-main"><div class="li-name">${c.month} ${c.year}</div><div class="li-sub">${c.date} · <span class="badge bg" style="font-size:8px">${c.type}</span></div></div><div class="li-right"><div class="li-val g">${fmtS(c.amount)}</div></div></div>`).join(''):emptyState('💰','No contributions yet');
+}
+function renderMyLoans(){
+  const m=myMem();if(!m)return;
+  document.getElementById('my-loans-list').innerHTML=(G.loans||[]).filter(l=>String(l.memberId)===String(m._id)).map(l=>{const tot=l.amount*(1+l.interest/100),bal=Math.max(0,tot-l.paid);return`<div class="list-item"><div class="li-main"><div class="li-name">${fmt(l.amount)} @ ${l.interest}%</div><div class="li-sub">${l.purpose||'—'} · Due: ${l.due||'—'}</div><div style="margin-top:4px;display:flex;gap:6px;"><span class="badge ${l.status==='paid'?'bg':'bo'}">${l.status}</span><span style="font-size:9px;color:${bal>0?'var(--rose)':'var(--sprout)'}">Bal: ${fmtS(bal)}</span></div></div><div class="li-right"><div class="li-val go">${fmtS(tot)}</div><div class="li-tag">total</div></div></div>`;}).join('')||emptyState('📄','No loans');
+}
+function renderMyStmt(){
+  fillYears();const m=myMem();if(!m)return;
+  const yr=parseInt(gv('ms-yr')||new Date().getFullYear());let ent=[];
+  (G.contributions||[]).filter(c=>String(c.memberId)===String(m._id)&&c.year===yr).forEach(c=>ent.push({date:c.date,type:'Credit',desc:c.type+' — '+c.month,cr:c.amount,dr:0}));
+  (G.loans||[]).filter(l=>String(l.memberId)===String(m._id)).forEach(l=>{
+    if(l.date&&new Date(l.date).getFullYear()===yr)ent.push({date:l.date,type:'Debit',desc:'Loan: '+(l.purpose||'General'),cr:0,dr:l.amount});
+    (l.repayments||[]).filter(r=>r.date&&new Date(r.date).getFullYear()===yr).forEach(r=>ent.push({date:r.date,type:'Credit',desc:'Repayment',cr:r.amount,dr:0}));
+  });
+  ent.sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));let bal=0;
+  document.getElementById('my-stmt-list').innerHTML=ent.length?ent.map(e=>{bal+=e.cr-e.dr;return`<div class="list-item"><div class="li-main"><div class="li-name" style="font-size:12px">${e.desc}</div><div class="li-sub">${e.date}</div></div><div class="li-right"><div class="li-val ${e.cr>0?'g':'r'}" style="font-size:14px">${e.cr>0?'+'+fmtS(e.cr):'-'+fmtS(e.dr)}</div><div class="li-tag">Bal: ${fmtS(bal)}</div></div></div>`;}).join(''):emptyState('📋','No transactions this year');
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────
+function drawBar(cid,labels,data){const c=document.getElementById(cid);if(!c)return;const ctx=c.getContext('2d');c.width=c.parentElement?.offsetWidth||300;c.height=160;ctx.clearRect(0,0,c.width,c.height);if(!data.length||data.every(d=>d===0)){ctx.fillStyle='rgba(184,223,198,.25)';ctx.font='11px IBM Plex Mono';ctx.textAlign='center';ctx.fillText('No data yet',c.width/2,80);return;}const max=Math.max(...data,1),P={t:8,r:8,b:28,l:8};const w=c.width-P.l-P.r,h=c.height-P.t-P.b;const bw=Math.min(28,w/labels.length-8);labels.forEach((lbl,i)=>{const x=P.l+(i+.5)*(w/labels.length)-bw/2,bh=Math.max(2,(data[i]/max)*h),y=P.t+h-bh;const g=ctx.createLinearGradient(0,y,0,y+bh);g.addColorStop(0,'rgba(114,184,136,.9)');g.addColorStop(1,'rgba(45,90,61,.4)');ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(x,y,bw,bh,3);ctx.fill();ctx.fillStyle='rgba(184,223,198,.5)';ctx.font='8px IBM Plex Mono';ctx.textAlign='center';ctx.fillText(lbl.slice(0,6),x+bw/2,c.height-6);});}
+function drawLine(cid,labels,data){const c=document.getElementById(cid);if(!c)return;const ctx=c.getContext('2d');c.width=c.parentElement?.offsetWidth||300;c.height=160;ctx.clearRect(0,0,c.width,c.height);if(!data.length||data.every(d=>d===0)){ctx.fillStyle='rgba(184,223,198,.25)';ctx.font='11px IBM Plex Mono';ctx.textAlign='center';ctx.fillText('No data yet',c.width/2,80);return;}const max=Math.max(...data,1),P={t:8,r:8,b:28,l:8};const w=c.width-P.l-P.r,h=c.height-P.t-P.b;const pts=data.map((d,i)=>({x:P.l+(i/(data.length-1||1))*w,y:P.t+h-(d/max)*h}));ctx.beginPath();ctx.moveTo(pts[0].x,P.t+h);pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.lineTo(pts[pts.length-1].x,P.t+h);ctx.closePath();const g=ctx.createLinearGradient(0,P.t,0,P.t+h);g.addColorStop(0,'rgba(114,184,136,.2)');g.addColorStop(1,'rgba(114,184,136,0)');ctx.fillStyle=g;ctx.fill();ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.strokeStyle='rgba(114,184,136,.8)';ctx.lineWidth=2;ctx.stroke();pts.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fillStyle='var(--sprout)';ctx.fill();ctx.fillStyle='rgba(184,223,198,.5)';ctx.font='8px IBM Plex Mono';ctx.textAlign='center';ctx.fillText((labels[i]||'').slice(0,6),p.x,c.height-6);});}
+
+// ── EXPORTS ───────────────────────────────────────────────────────
+function csvE(v){const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;}
+function dlCSV(name,rows){const b=new Blob([rows.map(r=>r.map(csvE).join(',')).join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();}
+function expMem(){const rows=[['Code','Name','Phone','NID','Joined','Target','Total Saved','Status']];(G.members||[]).forEach(m=>{const s=(G.contributions||[]).filter(c=>String(c.memberId)===String(m._id)).reduce((s,c)=>s+c.amount,0);rows.push([m.memberCode,m.name,m.phone,m.nid,m.joined,m.target,s,m.status]);});dlCSV('green-moon-members.csv',rows);}
+function expCon(){const rows=[['Date','Member','Amount','Month','Year','Type','Notes','Recorded By']];[...(G.contributions||[])].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).forEach(c=>{const m=getMem(c.memberId);rows.push([c.date,m?.name||'?',c.amount,c.month,c.year,c.type,c.notes||'',c.recordedBy||'']);});dlCSV('green-moon-contributions.csv',rows);}
+
+// ── INIT ──────────────────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  sv2('splash-txt','Connecting...');
+  document.querySelectorAll('input[type="date"]').forEach(el=>{if(!el.value)el.value=today();});
+  sv('ac-yr',new Date().getFullYear());sv('ac-mo',MONTHS[new Date().getMonth()]);
+  fillYears();
+
+  // Restore JWT session
+  let restored=false;
+  const token=localStorage.getItem('gm-jwt');
+  if(token){
+    try{
+      // Decode JWT payload (base64)
+      const payload=JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      if(payload.exp*1000>Date.now()){
+        CU={id:payload.id,username:payload.username,role:payload.role,memberId:payload.memberId||null};
+        sv2('splash-txt','Loading your data...');
+        await loadData();
+        document.getElementById('splash').style.display='none';
+        startApp();
+        restored=true;
+      }else{
+        localStorage.removeItem('gm-jwt');
+      }
+    }catch(e){localStorage.removeItem('gm-jwt');}
+  }
+
+  if(!restored){
+    document.getElementById('splash').style.display='none';
+    document.getElementById('auth').style.display='block';
+    document.getElementById('auth-pill').textContent='🌐 Secured · Real Database';
+  }
+});
+</script>
+</body>
+</html>
